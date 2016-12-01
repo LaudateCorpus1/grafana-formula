@@ -10,24 +10,40 @@
 
 {%- for datasource_name, datasource in client.datasource.iteritems() %}
 
-grafana_client_datasource_{{ datasource_name }}:
-  grafana3_datasource.present:
-  - name: {{ datasource_name }}
-  - type: {{ datasource.type }}
-  - url: http://{{ datasource.host }}:{{ datasource.get('port', 80) }}
-  {%- if datasource.access is defined %}
-  - access: proxy
-  {%- endif %}
-  {%- if datasource.user is defined %}
-  - user: {{ datasource.user }}
-  - password: {{ datasource.password }}
-  {%- endif %}
-  {%- if datasource.get('is_default', False) %}
-  - is_default: {{ datasource.is_default|lower }}
-  {%- endif %}
-  {%- if datasource.database is defined %}
-  - database: {{ datasource.database }}
-  {%- endif %}
+Run the curl POST to create the datasource:
+  cmd.run:
+    - name: |
+        curl -i -X POST 'http://{{ pillar.grafana.server.admin.user }}:{{ pillar.grafana.server.admin.password }}@{{ pillar.grafana.client.server.host }}:{{ pillar.grafana.client.server.port }}/api/datasources' -H 'Content-Type: application/json;charset=UTF-8' --data-binary '{"name":"{{datasource_name}}","type":"{{datasource.type}}","id":"{{datasource.id}}","access":"proxy", "url":"{{datasource.url}}","password":"{{datasource.password}}","user":"{{datasource.user}}", "database":"{{datasource.database}}","basicAuth":true,"basicAuthUser":"{{datasource.basic_auth_user}}", "basicAuthPassword":"{{datasource.basic_auth_password}}","isDefault":true,"jsonData":null}'
+
+# automating datasource creation isn't working...but it might be better than my cmd.run hack above
+# leaving this in for now in case we can get it working later
+#grafana_client_datasource_{{ datasource_name }}:
+#  grafana3_datasource.present:
+#  - name: {{ datasource_name }}
+#  - type: {{ datasource.type }}
+#  - url: http://{{ datasource.host }}:{{ datasource.get('port', 80) }}
+#  {%- if datasource.access is defined %}
+#  - access: proxy
+#  {%- endif %}
+#  {%- if datasource.user is defined %}
+#  - user: {{ datasource.user }}
+#  - password: {{ datasource.password }}
+#  {%- endif %}
+#  {%- if datasource.get('is_default', False) %}
+#  - is_default: {{ datasource.is_default|lower }}
+#  {%- endif %}
+#  {%- if datasource.database is defined %}
+#  - database: {{ datasource.database }}
+#  {%- endif %}
+#  {%- if datasource.basic_auth is defined %}
+#  - basic_auth: {{ datasource.basic_auth }}
+#  {%- endif %}
+#  {%- if datasource.basic_auth_user is defined %}
+#  - basic_auth_user: {{ datasource.basic_auth_user }}
+#  {%- endif %}
+#  {%- if datasource.basic_auth_password is defined %}
+#  - basic_auth_password: {{ datasource.basic_auth_password }}
+#  {%- endif %}
 
 {%- endfor %}
 

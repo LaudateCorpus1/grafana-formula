@@ -4,7 +4,10 @@
 grafana_packages:
   pkg.installed:
   - names: {{ server.pkgs }}
-
+  cmd.run:
+    - name: setcap 'cap_net_bind_service=+ep' /usr/sbin/grafana-server
+    - unless: getcap /usr/sbin/grafana-server | grep 'cap_net_bind_service+ep'
+    
 /etc/grafana/grafana.ini:
   file.managed:
   - source: salt://grafana/files/grafana.ini
